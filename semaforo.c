@@ -5,6 +5,9 @@ Descripción: Actividad 6 - Sockets y Señales
 
 NOTA: Se trabajó junto con el equipo 9, el cual está compuesto por Daniel Roa
       y Miguel Monterrubio
+
+El primer semaforo dice que esta y que no esta en amarillo al mismo tiempo
+Deberiamos imprimir el pid de cada semaforo
 */
 
 #include <stdio.h>
@@ -68,7 +71,7 @@ void verde(int senial){
 
     printf("Yo ahora estoy en verde.\n");
 
-    alarm(3);
+    alarm(6);
 }
 
 void elQueSigue(int senial){
@@ -90,11 +93,11 @@ int main(int argc, const char * argv[]){
     }
 
     if (signal(SIGTSTP, SIG_IGN) == SIG_ERR){
-        printf("ERROR: No se pudo llamar al manejador\n");
+        printf("Hubo un error al ignorar el CTRL-Z.\n");
     }
     
     else if (signal(SIGINT, SIG_IGN) == SIG_ERR){
-        printf("ERROR: No se pudo llamar al manejador\n");
+        printf("Hubo un error al ignorar el CTRL-C.\n");
     }
 
     sigemptyset(&listaDeSeniales);
@@ -112,6 +115,7 @@ int main(int argc, const char * argv[]){
     escritos = connect(semaforo, (struct sockaddr *) &direccion, sizeof(direccion));
 
     if (escritos == 0){
+        printf("Yo soy el semaforo con PID: %d.\n", pid);
         printf("Conectado a %s:%d\n", inet_ntoa(direccion.sin_addr), ntohs(direccion.sin_port));
 
         itoa(pid, buffer);

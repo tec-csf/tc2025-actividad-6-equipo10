@@ -20,9 +20,8 @@ NOTA: Se trabajó junto con el equipo 9, el cual está compuesto por Daniel Roa
 
 int semaforo_actual;
 int semaforos[4];
-int bufferes_semaforos[4];
+char bufferes_semaforos[4][100];
 ssize_t pids[4];
-int enVerde = 0;
 
 void todosEnRojo(int senial){
     char todosRojitos[] = "TodosRojosEh";
@@ -44,11 +43,11 @@ void todosEnAmarillo(int senial){
     printf("Todos están en amarillo.\n");
 }
 
-void estadoSemaforoActual(int senial){
-    printf("Hola\n");
+void estadoSemaforoActual(int id){
+    printf("\n");
 
     for (int i = 0; i < 4; ++i){
-        if (i == senial){
+        if (i == id){
             printf("Semáforo %d está en verde.\n", i + 1);
         }
 
@@ -72,6 +71,7 @@ int main(int argc, const char * argv[]){
         exit(-1);
     }
 
+    // No sabemos si esto debe ir aquí.
     if (signal(SIGTSTP, estadoSemaforoActual) == SIG_ERR){
         printf("ERROR: No se pudo llamar al manejador\n");
     }

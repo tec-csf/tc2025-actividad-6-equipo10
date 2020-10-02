@@ -2,10 +2,8 @@
 Autores: Antonio Junco de Haas, Sergio Hernandez Castillo
 Matrículas: A, A01025210
 Descripción: Actividad 6 - Sockets y Señales
-
 NOTA: Se trabajó junto con el equipo 9, el cual está compuesto por Daniel Roa
       y Miguel Monterrubio
-
 El primer semaforo dice que esta y que no esta en amarillo al mismo tiempo
 Deberiamos imprimir el pid de cada semaforo
 */
@@ -25,13 +23,13 @@ Deberiamos imprimir el pid de cada semaforo
 int semaforo;
 int siguiente_semaforo;
 int color; // Rojo = 0, Amarillo = 1, Verde = 2
-int color_anterior; 
+int color_anterior;
 
 void reverse(char s[]){
     int i;
     int j;
     char c;
-    
+
     for (i = 0, j = strlen(s) - 1; i < j; ++i, --j){
         c = s[i];
         s[i] = s[j];
@@ -42,17 +40,17 @@ void reverse(char s[]){
 void itoa(int n, char s[]){
     int i;
     int sign;
-    
-    if ((sign = n) < 0){  
+
+    if ((sign = n) < 0){
         n = -n;
-    }          
+    }
 
     i = 0;
 
-    do {       
-        s[i++] = n % 10 + '0';   
+    do {
+        s[i++] = n % 10 + '0';
     }
-    
+
     while ((n /= 10) > 0);
 
     if (sign < 0){
@@ -95,7 +93,7 @@ int main(int argc, const char * argv[]){
     if (signal(SIGTSTP, SIG_IGN) == SIG_ERR){
         printf("Hubo un error al ignorar el CTRL-Z.\n");
     }
-    
+
     else if (signal(SIGINT, SIG_IGN) == SIG_ERR){
         printf("Hubo un error al ignorar el CTRL-C.\n");
     }

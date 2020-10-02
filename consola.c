@@ -2,7 +2,6 @@
 Autores: Antonio Junco de Haas, Sergio Hernandez Castillo
 Matrículas: A, A01025210
 Descripción: Actividad 6 - Sockets y Señales
-
 NOTA: Se trabajó junto con el equipo 9, el cual está compuesto por Daniel Roa
       y Miguel Monterrubio
 */
@@ -20,7 +19,7 @@ NOTA: Se trabajó junto con el equipo 9, el cual está compuesto por Daniel Roa
 
 int semaforo_actual;
 int semaforos[4];
-char bufferes_semaforos[4][100];
+char bufferes_semaforos[4][1000];
 ssize_t pids[4];
 
 void todosEnRojo(int senial){
@@ -44,7 +43,7 @@ void todosEnAmarillo(int senial){
 }
 
 void estadoSemaforoActual(int id){
-    printf("\n");
+    printf("O sole mio\n");
 
     for (int i = 0; i < 4; ++i){
         if (i == id){
@@ -63,7 +62,7 @@ int main(int argc, const char * argv[]){
     char inicio[] = "Empieza";
     int servidor;
     ssize_t leidos;
-    ssize_t escritos; 
+    ssize_t escritos;
     pid_t pid;
 
     if (argc != 2){
@@ -90,7 +89,7 @@ int main(int argc, const char * argv[]){
 
     bind(servidor, (struct sockaddr *) &direccion, sizeof(direccion));
 
-    // Escuchar 
+    // Escuchar
     listen(servidor, 4); // 4 porque son 4 semaforos
 
     escritos = sizeof(direccion);
@@ -100,10 +99,11 @@ int main(int argc, const char * argv[]){
         printf("Aceptando conexiones en %s:%d\n", inet_ntoa(direccion.sin_addr), ntohs(direccion.sin_port));
 
         pid = fork();
-
+        //printf("BABY\n");
         if (pid == 0){
+          //printf("Make your mind\n");
             semaforo_actual = semaforos[i];
-            
+
             if (signal(SIGTSTP, todosEnRojo) == SIG_ERR){
                 printf("Hubo un error con el manejador rojo.\n");
             }
@@ -111,11 +111,14 @@ int main(int argc, const char * argv[]){
             if (signal(SIGINT, todosEnAmarillo) == SIG_ERR){
                 printf("Hubo un error con el manejador amarillo.\n");
             }
-
+            //printf("Still alive");
             close(servidor);
+            //printf("Killed");
 
             if (semaforo_actual >= 0){
+              //printf("Not in while");
                 while(leidos = read(semaforos[i], &buffer, sizeof(buffer))){
+                  //printf("In while");
                     estadoSemaforoActual(i);
                 }
             }
@@ -124,13 +127,18 @@ int main(int argc, const char * argv[]){
         }
 
         else {
+          //printf("Is in else of pids\n");
             pids[i] = read(semaforos[i], &bufferes_semaforos[i], sizeof(bufferes_semaforos[i]));
+            //i=4;
         }
     }
-
+    //printf("Ended the for 4\n");
     if (pid > 0){
+      //printf("Is in pid>0\n");
         for (int i = 0; i < 4; ++i){
+          printf("What am i doin here\n");
             if (i == 3){
+              printf("Hola");
                 write(semaforos[i], &bufferes_semaforos[0], pids[0]);
             }
 

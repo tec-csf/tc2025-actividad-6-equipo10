@@ -19,13 +19,24 @@ NOTA: Se trabajó junto con el equipo 9, el cual está compuesto por Daniel Roa
 #define TCP_PORT 8000
 
 int semaforo_actual;
+int semaforos[4];
+int bufferes_semaforos[4];
+ssize_t pids[4];
 
 void todosEnRojo(int senial){
+    char todosRojitos[] = "TodosRojosEh";
 
+    for (int i = 0; i < 4; ++i){
+        write(semaforos[i], &todosRojitos, sizeof(todosRojitos));
+    }
 }
 
 void todosEnAmarillo(int senial){
+    char todosAmarillitos[] = "TodosAmarillosEh";
 
+    for (int i = 0; i < 4; ++i){
+        write(semaforos[i], &todosAmarillitos, sizeof(todosAmarillitos));
+    }
 }
 
 void estadoSemaforoActual(int senial){
@@ -45,7 +56,7 @@ void estadoSemaforoActual(int senial){
 int main(int argc, const char * argv){
     struct sockaddr_in direccion;
     char buffer[1000];
-    char inicio[] = "INICIO";
+    char inicio[] = "Empieza";
     int servidor;
     ssize_t leidos;
     ssize_t escritos; 
@@ -55,6 +66,14 @@ int main(int argc, const char * argv){
         printf("Usa: %s IP_Servidor\n", argv[0]);
         exit(-1);
     }
+
+    // if (signal(SIGTSTP, SIG_IGN) == SIG_ERR){
+    //     printf("Hubo un error al ignorar el CTRL-Z\n");
+    // }
+
+    // if (signal(SIGINT, SIG_IGN) == SIG_ERR){
+    //     printf("Hubo un error al ignorar el CTRL-C\n");
+    // }
 
     // Se crea el socket
     servidor = socket(PF_INET, SOCK_STREAM, 0);
@@ -71,10 +90,6 @@ int main(int argc, const char * argv){
 
     escritos = sizeof(direccion);
 
-    int semaforos[4];
-    int bufferes_semaforos[4];
-    ssize_t pids[4];
-
     for (int i = 0; i < 4; ++i){
         semaforos[i] = accept(servidor, (struct sockaddr *) &direccion, &escritos);
         printf("Aceptando conexiones en %s:%d\n", inet_ntoa(direccion.sin_addr), ntohs(direccion.sin_port));
@@ -83,8 +98,14 @@ int main(int argc, const char * argv){
 
         if (pid == 0){
             semaforo_actual = semaforos[i];
-            signal(SIGTSTP, todosEnRojo);
-            //signal(SIGINT, todosEnAmarillo);
+            
+            if (signal(SIGTSTP, todosEnRojo) == SIG_ERR){
+                printf("Hubo un error con el manejador rojo.\n");
+            }
+
+            if (signal(SIGINT, todosEnAmarillo) == SIG_ERR){
+                printf("Hubo un error con el manejador amarillo.\n");
+            }
 
             close(servidor);
 

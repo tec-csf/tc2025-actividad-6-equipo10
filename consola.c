@@ -14,7 +14,7 @@ NOTA: Se trabajó junto con el equipo 9, el cual está compuesto por Daniel Roa
 #include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
-#include <sys/types.h>
+#include <string.h>
 
 #define TCP_PORT 8000
 
@@ -22,6 +22,7 @@ int semaforo_actual;
 int semaforos[4];
 int bufferes_semaforos[4];
 ssize_t pids[4];
+int enVerde = 0;
 
 void todosEnRojo(int senial){
     char todosRojitos[] = "TodosRojosEh";
@@ -29,6 +30,8 @@ void todosEnRojo(int senial){
     for (int i = 0; i < 4; ++i){
         write(semaforos[i], &todosRojitos, sizeof(todosRojitos));
     }
+
+    printf("Todos están en rojo.\n");
 }
 
 void todosEnAmarillo(int senial){
@@ -37,10 +40,12 @@ void todosEnAmarillo(int senial){
     for (int i = 0; i < 4; ++i){
         write(semaforos[i], &todosAmarillitos, sizeof(todosAmarillitos));
     }
+
+    printf("Todos están en amarillo.\n");
 }
 
 void estadoSemaforoActual(int senial){
-    printf("\n");
+    printf("Hola\n");
 
     for (int i = 0; i < 4; ++i){
         if (i == senial){
@@ -53,7 +58,7 @@ void estadoSemaforoActual(int senial){
     }
 }
 
-int main(int argc, const char * argv){
+int main(int argc, const char * argv[]){
     struct sockaddr_in direccion;
     char buffer[1000];
     char inicio[] = "Empieza";
@@ -67,13 +72,13 @@ int main(int argc, const char * argv){
         exit(-1);
     }
 
-    // if (signal(SIGTSTP, SIG_IGN) == SIG_ERR){
-    //     printf("Hubo un error al ignorar el CTRL-Z\n");
-    // }
+    if (signal(SIGTSTP, estadoSemaforoActual) == SIG_ERR){
+        printf("ERROR: No se pudo llamar al manejador\n");
+    }
 
-    // if (signal(SIGINT, SIG_IGN) == SIG_ERR){
-    //     printf("Hubo un error al ignorar el CTRL-C\n");
-    // }
+    else if (signal(SIGINT, estadoSemaforoActual) == SIG_ERR){
+        printf("ERROR: No se pudo llamar al manejador\n");
+    }
 
     // Se crea el socket
     servidor = socket(PF_INET, SOCK_STREAM, 0);

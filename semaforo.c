@@ -22,6 +22,7 @@ NOTA: Se trabajó junto con el equipo 9, el cual está compuesto por Daniel Roa
 int semaforo;
 int siguiente_semaforo;
 int color; // Rojo = 0, Amarillo = 1, Verde = 2
+int color_anterior; 
 
 void reverse(char s[]){
     int i;
@@ -64,6 +65,9 @@ void verde(int senial){
     color = 2;
     char elColor[] = "Verde";
     write(semaforo, &elColor, sizeof(elColor));
+
+    printf("Yo ahora estoy en verde.\n");
+
     alarm(3);
 }
 
@@ -78,11 +82,24 @@ int main(int argc, const char * argv[]){
     ssize_t leidos;
     ssize_t escritos;
     pid_t pid = getpid();
+    sigset_t listaDeSeniales;
 
     if (argc != 2){
         printf("Usa: %s IP_Servidor\n", argv[0]);
         exit(-1);
     }
+
+    if (signal(SIGTSTP, SIG_IGN) == SIG_ERR){
+        printf("ERROR: No se pudo llamar al manejador\n");
+    }
+    
+    else if (signal(SIGINT, SIG_IGN) == SIG_ERR){
+        printf("ERROR: No se pudo llamar al manejador\n");
+    }
+
+    sigemptyset(&listaDeSeniales);
+    sigaddset(&listaDeSeniales, SIGUSR1);
+    sigaddset(&listaDeSeniales, SIGALRM);
 
     // Se crea el socket
     semaforo = socket(PF_INET, SOCK_STREAM, 0);
@@ -117,7 +134,35 @@ int main(int argc, const char * argv[]){
                 raise(SIGUSR1);
             }
 
-            else if ((strcmp(buffer, "TodosRojosEh") == 0) && (color != 0))
+            else if ((strcmp(buffer, "TodosRojosEh") == 0) && (color != 0)){
+                color_anterior = color;
+                color = 0;
+                printf("Yo ahora estoy en rojo.\n");
+                sigprocmask(SIG_BLOCK, &listaDeSeniales, NULL);
+            }
+
+            else if ((strcmp(buffer, "TodosAmarillosEh") == 0) && (color != 1)){
+                color_anterior = color;
+                color = 1;
+                printf("Yo ahora estoy en amarillo.\n");
+                sigprocmask(SIG_BLOCK, &listaDeSeniales, NULL);
+            }
+
+            else if ((strcmp(buffer, "TodosRojosEh") == 0) && (color == 0)){
+                color = color_anterior;
+                printf("Ya no estoy en rojo.\n");
+                sigprocmask(SIG_UNBLOCK, &listaDeSeniales, NULL);
+            }
+
+            else if ((strcmp(buffer, "TodosAmarillosEh") == 0) && (color == 1)){
+                color = color_anterior;
+                printf("Ya no estoy en amarillo.\n");
+                sigprocmask(SIG_UNBLOCK, &listaDeSeniales, NULL);
+            }
         }
     }
+
+    close(semaforo);
+
+    return 0;
 }

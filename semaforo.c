@@ -1,11 +1,10 @@
 /*
 Autores: Antonio Junco de Haas, Sergio Hernandez Castillo
-Matrículas: A, A01025210
+Matrículas: A01339695, A01025210
 Descripción: Actividad 6 - Sockets y Señales
+
 NOTA: Se trabajó junto con el equipo 9, el cual está compuesto por Daniel Roa
       y Miguel Monterrubio
-El primer semaforo dice que esta y que no esta en amarillo al mismo tiempo
-Deberiamos imprimir el pid de cada semaforo
 */
 
 #include <stdio.h>
@@ -84,6 +83,8 @@ int main(int argc, const char * argv[]){
     ssize_t escritos;
     pid_t pid = getpid();
     sigset_t listaDeSeniales;
+    int bloqueado = 0;
+    int bloqueado2 = 0;
 
     if (argc != 2){
         printf("Usa: %s IP_Servidor\n", argv[0]);
@@ -135,31 +136,35 @@ int main(int argc, const char * argv[]){
             if (strcmp(buffer, "Empieza") == 0){
                 raise(SIGUSR1);
             }
-
-            else if ((strcmp(buffer, "TodosRojosEh") == 0) && (color != 0)){
+            
+            else if ((strcmp(buffer, "TodosRojosEh") == 0) && (bloqueado == 0) && (bloqueado2 == 0)){
                 color_anterior = color;
                 color = 0;
-                printf("Yo ahora estoy en rojo.\n");
+                printf("Yo ahora estoy en rojo y estoy bloqueado.\n");
                 sigprocmask(SIG_BLOCK, &listaDeSeniales, NULL);
+                bloqueado = 1;
             }
 
-            else if ((strcmp(buffer, "TodosAmarillosEh") == 0) && (color != 1)){
+            else if ((strcmp(buffer, "TodosAmarillosEh") == 0) && (bloqueado2 == 0) && (bloqueado == 0)){
                 color_anterior = color;
                 color = 1;
-                printf("Yo ahora estoy en amarillo.\n");
+                printf("Yo ahora estoy en amarillo y estoy bloqueado.\n");
                 sigprocmask(SIG_BLOCK, &listaDeSeniales, NULL);
+                bloqueado2 = 1;
             }
 
-            else if ((strcmp(buffer, "TodosRojosEh") == 0) && (color == 0)){
+            else if ((strcmp(buffer, "TodosRojosEh") == 0) && (bloqueado == 1) && (bloqueado2 == 0)){
                 color = color_anterior;
-                printf("Ya no estoy en rojo.\n");
+                printf("Ya no estoy en rojo y no estoy bloqueado.\n");
                 sigprocmask(SIG_UNBLOCK, &listaDeSeniales, NULL);
+                bloqueado = 0;
             }
 
-            else if ((strcmp(buffer, "TodosAmarillosEh") == 0) && (color == 1)){
+            else if ((strcmp(buffer, "TodosAmarillosEh") == 0) && (bloqueado2 == 1) && (bloqueado == 0)){
                 color = color_anterior;
-                printf("Ya no estoy en amarillo.\n");
+                printf("Ya no estoy en amarillo y no estoy bloqueado.\n");
                 sigprocmask(SIG_UNBLOCK, &listaDeSeniales, NULL);
+                bloqueado2 = 0;
             }
         }
     }

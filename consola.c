@@ -1,7 +1,8 @@
 /*
 Autores: Antonio Junco de Haas, Sergio Hernandez Castillo
-Matrículas: A, A01025210
+Matrículas: A01339695, A01025210
 Descripción: Actividad 6 - Sockets y Señales
+
 NOTA: Se trabajó junto con el equipo 9, el cual está compuesto por Daniel Roa
       y Miguel Monterrubio
 */
@@ -22,28 +23,8 @@ int semaforos[4];
 char bufferes_semaforos[4][1000];
 ssize_t pids[4];
 
-void todosEnRojo(int senial){
-    char todosRojitos[] = "TodosRojosEh";
-
-    for (int i = 0; i < 4; ++i){
-        write(semaforos[i], &todosRojitos, sizeof(todosRojitos));
-    }
-
-    printf("Todos están en rojo.\n");
-}
-
-void todosEnAmarillo(int senial){
-    char todosAmarillitos[] = "TodosAmarillosEh";
-
-    for (int i = 0; i < 4; ++i){
-        write(semaforos[i], &todosAmarillitos, sizeof(todosAmarillitos));
-    }
-
-    printf("Todos están en amarillo.\n");
-}
-
 void estadoSemaforoActual(int id){
-    printf("O sole mio\n");
+    printf("\n");
 
     for (int i = 0; i < 4; ++i){
         if (i == id){
@@ -54,6 +35,20 @@ void estadoSemaforoActual(int id){
             printf("Semáforo %d está en rojo.\n", i + 1);
         }
     }
+}
+
+void todosEnRojo(int senial){
+    char todosRojitos[] = "TodosRojosEh";
+    write(semaforo_actual, &todosRojitos, sizeof(todosRojitos));
+
+    printf("Semáforo está en rojo por señal de usuario.\n");
+}
+
+void todosEnAmarillo(int senial){
+    char todosAmarillitos[] = "TodosAmarillosEh";
+    write(semaforo_actual, &todosAmarillitos, sizeof(todosAmarillitos));
+
+    printf("Semáforo está en amarillo por señal de usuario.\n");
 }
 
 int main(int argc, const char * argv[]){
@@ -70,12 +65,11 @@ int main(int argc, const char * argv[]){
         exit(-1);
     }
 
-    // No sabemos si esto debe ir aquí.
-    if (signal(SIGTSTP, estadoSemaforoActual) == SIG_ERR){
+    if (signal(SIGTSTP, SIG_IGN) == SIG_ERR){
         printf("ERROR: No se pudo llamar al manejador\n");
     }
 
-    else if (signal(SIGINT, estadoSemaforoActual) == SIG_ERR){
+    else if (signal(SIGINT, SIG_IGN) == SIG_ERR){
         printf("ERROR: No se pudo llamar al manejador\n");
     }
 
@@ -99,9 +93,8 @@ int main(int argc, const char * argv[]){
         printf("Aceptando conexiones en %s:%d\n", inet_ntoa(direccion.sin_addr), ntohs(direccion.sin_port));
 
         pid = fork();
-        //printf("BABY\n");
+        
         if (pid == 0){
-          //printf("Make your mind\n");
             semaforo_actual = semaforos[i];
 
             if (signal(SIGTSTP, todosEnRojo) == SIG_ERR){
@@ -111,14 +104,11 @@ int main(int argc, const char * argv[]){
             if (signal(SIGINT, todosEnAmarillo) == SIG_ERR){
                 printf("Hubo un error con el manejador amarillo.\n");
             }
-            //printf("Still alive");
+            
             close(servidor);
-            //printf("Killed");
 
             if (semaforo_actual >= 0){
-              //printf("Not in while");
                 while(leidos = read(semaforos[i], &buffer, sizeof(buffer))){
-                  //printf("In while");
                     estadoSemaforoActual(i);
                 }
             }
@@ -127,18 +117,14 @@ int main(int argc, const char * argv[]){
         }
 
         else {
-          //printf("Is in else of pids\n");
             pids[i] = read(semaforos[i], &bufferes_semaforos[i], sizeof(bufferes_semaforos[i]));
-            //i=4;
         }
     }
-    //printf("Ended the for 4\n");
+    
     if (pid > 0){
-      //printf("Is in pid>0\n");
+      
         for (int i = 0; i < 4; ++i){
-          printf("What am i doin here\n");
             if (i == 3){
-              printf("Hola");
                 write(semaforos[i], &bufferes_semaforos[0], pids[0]);
             }
 
